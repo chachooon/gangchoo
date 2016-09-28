@@ -169,7 +169,7 @@ def off():
 	else: yymm = str(now_y)+str(now_m)
 	# if now_m == 12: months = ['12','1']
 	# else: months = [str(now_m), str(now_m+1)]
-	month = '8'
+	month = '10'
 	institute = 'YBM'
 	branc_dict =  {
 		'1':'종로센터',
@@ -220,7 +220,7 @@ def off():
 		category = categories[n]
 		mk_header = api.mk_header(category,'off')
 		file_name = month+'_'+category+'_'+institute+'_'+strDate+'.csv'
-		with open('/Users/choon/py3.5/'+file_name,'w',newline="\n", encoding="utf-8") as file: 
+		with open('/Users/choon/Documents/'+file_name,'w',newline="\n", encoding="utf-8") as file: 
 			file = csv.writer(file ,delimiter=',')
 			file.writerow('')
 			file.writerow(mk_header)
@@ -301,8 +301,8 @@ def off():
 					if len(teachers) == 1: 
 						tcnames = html.parser.HTMLParser().unescape(teachers[0]['name'])
 						tc_name = tcnames.split('(')[0]
-						if tc_name in tcdict: 
-							tc_code = tcdict[tc_name]
+						if tc_name in tc_data: 
+							tc_code = tc_data[tc_name]
 							tc_txt = ''
 						else: 
 							tc_txt = tc_name
@@ -313,22 +313,16 @@ def off():
 							tcname = html.parser.HTMLParser().unescape(teachers[t]['name'])
 							tcnames.append(tcname)
 							tc_name = tcname.split('(')[0]
-							if tc_name in tcdict:
-								if tcdict[tc_name] not in tc_code: tc_code.append(tcdict[tc_name])
+							if tc_name in tc_data:
+								if tc_data[tc_name] not in tc_code: tc_code.append(tc_data[tc_name])
 							else:
 								if tc_name not in tc_txt: tc_txt.append(tc_name)
 						tcnames = ' '.join(tcnames)
 						tc_txt = '//'.join(tc_txt)
 						tc_code = '//'.join(tc_code)
 
-					
-
-				
-				
-					
-
 					file_name = month+'_'+category+'_'+institute+'_'+strDate+'.csv'
-					with open('/Users/choon/py3.5/'+file_name,'a',newline="\n", encoding="utf-8") as file: 
+					with open('/Users/choon/Documents/'+file_name,'a',newline="\n", encoding="utf-8") as file: 
 						file = csv.writer(file ,delimiter=',')							
 						file.writerow([branch, title, st_t, ed_t, tc_txt, tc_code, price, url] + wk_list+ lv_list + tp_list)	
 

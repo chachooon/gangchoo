@@ -163,13 +163,14 @@ def off():
 	with open('/Users/choon/py3.5/gcrawler/'+'강사.txt','r' ,encoding="utf-8") as file: tc_data =file.read().replace('\\n','')
 
 	strDate = datetime.datetime.now().strftime("%y%m%d")
-	now_y = datetime.date.today().year
-	now_m = datetime.date.today().month
-	if len(str(now_m)) == 1: yymm = str(now_y)+'0'+str(now_m)
-	else: yymm = str(now_y)+str(now_m)
+	# now_y = datetime.date.today().year
+	# now_m = datetime.date.today().month
+	# if len(str(now_m)) == 1: yymm = str(now_y)+'0'+str(now_m)
+	# else: yymm = str(now_y)+str(now_m)
 	# if now_m == 12: months = ['12','1']
 	# else: months = [str(now_m), str(now_m+1)]
-	month = '8'
+	month = '10'
+	yymm = "201610"
 	institute = '파고다'
 	branc_dict = {'04':'강남학원','01':'종로학원','02':'신촌학원','08':'여의도학원','12':'부평학원','30':'부산대학원','05':'서면학원','25':'대연학원'}
 	categ_code_dict = {
@@ -182,12 +183,12 @@ def off():
 		'일반영어':['110','120','200','210','220','230','240']
 		}
 	categ_bran_dict = {
-		# '260':['04','01','02','08','12','30','05','25'],
-		# '250':['04','01','02','12','05','30','25'], 
-		# '251':['04','01','02','12','05','30','25'],
-		# '391':['04','01','02','08','12','05','30','25'],
-		# '270':['04','01','02','05','30'],
-		# '310':['04','01','02','12','05','25'], 
+		'260':['04','01','02','08','12','30','05','25'],
+		'250':['04','01','02','12','05','30','25'], 
+		'251':['04','01','02','12','05','30','25'],
+		'391':['04','01','02','08','12','05','30','25'],
+		'270':['04','01','02','05','30'],
+		'310':['04','01','02','12','05','25'], 
 		'110':['04','01','02','08','12','30','25'],
 		'120':['04','01','02','08','12','30','05','25'],
 		'200':['05','25'],
@@ -203,7 +204,7 @@ def off():
 		category = categories[n]
 		mk_header = api.mk_header(category,'off')
 		file_name = month+'_'+category+'_'+institute+'_'+strDate+'.csv'
-		with open('/Users/choon/py3.5/'+file_name,'w',newline="\n", encoding="utf-8") as file: 
+		with open('/Users/choon/Documents/'+file_name,'w',newline="\n", encoding="utf-8") as file: 
 			file = csv.writer(file ,delimiter=',')
 			file.writerow('')
 			file.writerow(mk_header)
@@ -219,115 +220,117 @@ def off():
 				branch = branc_dict[brancode]
 				BASE_URL = "http://m.pagoda21.com/m/register/class/step1Two.do?subjcode=" + subjcode +"&brancode=" + brancode 
 				data = BeautifulSoup(requests.get(BASE_URL).text, 'html.parser')	
-				typecode_list = data.select('ul.accordion_list')[0].select('li')
-				print(category+branch+'_'+str(len(typecode_list))+'typecodes')
+				if len(data.select('ul.accordion_list'))>0:
+					typecode_list = data.select('ul.accordion_list')[0].select('li')
+					print(category+branch+'_'+str(len(typecode_list))+'typecodes')
 
-				for t in range(len(typecode_list)):
-					typecode = typecode_list[t]['id'].split('_')[-1]
+					for t in range(len(typecode_list)):
+						typecode = typecode_list[t]['id'].split('_')[-1]
 
-					data2 = requests.post(
-						'http://m.pagoda21.com/m/register/class/ajax/getTimeMobile.do',
-						data={
-							'yymm':yymm,
-							'schedule':yymm,
-							'branch':brancode,
-							'subjcode':subjcode,
-							'classterm':'all',
-							'courses':yymm+'/'+brancode+'/aaaa/all/N',
-							'typecode':typecode,
-							'schgubun':'lectgb',
-							'mobileChk':'Y',
-							'ordergubun':'time'
-							}
-						)	
-					data2 = BeautifulSoup(data2.text, 'html.parser')
-					lects = data2.select('.lect_area > ul > li')
-					for num in range(len(lects)):
-						lect = lects[num].select('.cn_box')[0]
-						link= lect.select('a')[0]['href'].replace("'","").split(",")
-						if len(link)<5: print('url_error')
-						else:
-							sale_id = brancode + link[2]+link[3]+link[4]+link[5]
-							url='http://m.pagoda21.com/m/lecture/detail/'+sale_id+'?yymm='+yymm
-							if len(lect.select('.class_tit'))>0:
-								title = lect.select('.class_tit')[0].text.replace(month+'월','['+month+'월] ')
-
-								st_t = lect.select('.class_sch > span:nth-of-type(3)')[0].text.split('~')[0].strip().replace(':','')
-								ed_t = lect.select('.class_sch > span:nth-of-type(3)')[0].text.split('~')[1].strip().replace(':','')	
-								week = lect.select('.class_sch > span:nth-of-type(2)')[0].text				
-								[w1,w2,w3,w4,w5,w6,w7] =['','','','','','','']
-								if '월' in week: w1 = 'Y'
-								if '화' in week: w2 = 'Y'
-								if '수' in week: w3 = 'Y'
-								if '목' in week: w4 = 'Y'
-								if '금' in week: w5 = 'Y'
-								if '토' in week: w6 = 'Y'
-								if '일요반' in week: w7 = 'Y'
-								if '토일' in week: w7 = 'Y'
-								if '기타' in week: [w1,w2,w3,w4,w5,w6,w7] =['Y','Y','Y','Y','Y','','']
-								if '주5일' in week: [w1,w2,w3,w4,w5,w6,w7] =['Y','Y','Y','Y','Y','','']
-								wt = ''
-								exc =['특별반','2주반','주4일']
-								for e in range(len(exc)):	
-									if exc[e] in week: 
-										[w1,w2,w3,w4,w5,w6,w7] =['Y','Y','Y','Y','Y','','']
-										wt = week
-								wk_list= [w1,w2,w3,w4,w5,w6,w7,wt]
-
-								price = lect.select('.txt_price')[0].text.replace('"','').replace(',','').replace('원','').strip()
-								lv_list = mklevel(category, title)
-								tp_list = mktype(category, title)	
-
-								 #마감강의 걸러내기
-								if 'ico_end' in str(lect): pass
-									# with open('C:\\'+'마감강의.txt','a',encoding='utf-8') as endfile:
-									# 	endfile.write(strDate+'-'+institute+'__'+title+'\n')			
+						data2 = requests.post(
+							'http://m.pagoda21.com/m/register/class/ajax/getTimeMobile.do',
+							data={
+								'yymm':yymm,
+								'schedule':yymm,
+								'branch':brancode,
+								'subjcode':subjcode,
+								'classterm':'all',
+								'courses':yymm+'/'+brancode+'/aaaa/all/N',
+								'typecode':typecode,
+								'schgubun':'lectgb',
+								'mobileChk':'Y',
+								'ordergubun':'time'
+								}
+							)	
+						data2 = BeautifulSoup(data2.text, 'html.parser')
+						lects = data2.select('.lect_area > ul > li')
+						for num in range(len(lects)):
+							lect = lects[num].select('.cn_box')[0]
+							if len(lect.select('a')) > 0:
+								link= lect.select('a')[0]['href'].replace("'","").split(",")
+								if len(link)<5: print('url_error')
 								else:
-									tc_txt=[]
-									tc_code=[]
-									teacher1 = lect.select('.img_name')[0].text.strip()
-									if len(lect.select('.class_name'))>0: teacher2 = lect.select('.class_name')[0].text
-									else: teacher2 =''
-									
-									if teacher2=='': 
-										tc_name = teacher1
-										if tc_name=='':tc_name = '-'
-										tc = re.findall('TC.....'+tc_name,tc_data)	
-										if len(tc) == 0: 
-											tc_code = ''
-											tc_txt = tc_name
-										elif len(tc) == 1: 
-											tc_code = tc[0][0:7]
-											tc_txt = ''
-										else: 
-											tc_code = ''
-											tc_txt = tc_name
-											with open('/Users/choon/py3.5/'+'강사중복.txt','a',encoding='utf-8') as tcError:
-												tcError.write(strDate+'-'+institute+'__'+tc_name+'__'+title+'\n')								
+									sale_id = brancode + link[2]+link[3]+link[4]+link[5]
+									url='http://m.pagoda21.com/m/lecture/detail/'+sale_id+'?yymm='+yymm
+									if len(lect.select('.class_tit'))>0:
+										title = lect.select('.class_tit')[0].text.replace(month+'월','['+month+'월] ')
 
-									else: 
-										teachers = str(teacher2).split(',')
-										for tcs in range(len(teachers)):
-											tc_name = teachers[tcs].strip()
-											if tc_name=='': tc_name='-'
-											tc = re.findall('TC.....'+tc_name,tc_data)
-											if len(tc) == 0: tc_txt.append(tc_name)
-											elif len(tc) == 1: tc_code.append(tc[0][0:7])
-											else: # 강사 중복 파일로 저장 
-												tc_txt.append(tc_name)
-												with open('/Users/choon/py3.5/'+'강사중복.txt','a',encoding='utf-8') as tcError:
-													tcError.write(strDate+'-'+institute+'__'+tc_name+'__'+title+'\n')
-										if len(tc_txt)==1: tc_txt = tc_txt[0]
-										else: tc_txt ='//'.join(tc_txt)
-										if len(tc_code)==1: tc_code = tc_code[0]
-										else: tc_code ='//'.join(tc_code)
+										st_t = lect.select('.class_sch > span:nth-of-type(3)')[0].text.split('~')[0].strip().replace(':','')
+										ed_t = lect.select('.class_sch > span:nth-of-type(3)')[0].text.split('~')[1].strip().replace(':','')	
+										week = lect.select('.class_sch > span:nth-of-type(2)')[0].text				
+										[w1,w2,w3,w4,w5,w6,w7] =['','','','','','','']
+										if '월' in week: w1 = 'Y'
+										if '화' in week: w2 = 'Y'
+										if '수' in week: w3 = 'Y'
+										if '목' in week: w4 = 'Y'
+										if '금' in week: w5 = 'Y'
+										if '토' in week: w6 = 'Y'
+										if '일요반' in week: w7 = 'Y'
+										if '토일' in week: w7 = 'Y'
+										if '기타' in week: [w1,w2,w3,w4,w5,w6,w7] =['Y','Y','Y','Y','Y','','']
+										if '주5일' in week: [w1,w2,w3,w4,w5,w6,w7] =['Y','Y','Y','Y','Y','','']
+										wt = ''
+										exc =['특별반','2주반','주4일']
+										for e in range(len(exc)):	
+											if exc[e] in week: 
+												[w1,w2,w3,w4,w5,w6,w7] =['Y','Y','Y','Y','Y','','']
+												wt = week
+										wk_list= [w1,w2,w3,w4,w5,w6,w7,wt]
 
-									file_name = month+'_'+category+'_'+institute+'_'+strDate+'.csv'
-									with open('/Users/choon/py3.5/'+file_name,'a',newline="\n", encoding="utf-8") as file: 
-										file = csv.writer(file ,delimiter=',')							
-										file.writerow([branch, title, st_t, ed_t, tc_txt, tc_code, price, url] + wk_list + lv_list + tp_list)	
+										price = lect.select('.txt_price')[0].text.replace('"','').replace(',','').replace('원','').strip()
+										lv_list = mklevel(category, title)
+										tp_list = mktype(category, title)	
 
-							else: print('no title')
+										 #마감강의 걸러내기
+										if 'ico_end' in str(lect): 
+											with open('/Users/choon/Documents/'+'마감강의.txt','a',encoding='utf-8') as endfile:
+												endfile.write(strDate+'-'+institute+'__'+title+'\n')			
+										else:
+											tc_txt=[]
+											tc_code=[]
+											teacher1 = lect.select('.img_name')[0].text.strip()
+											if len(lect.select('.class_name'))>0: teacher2 = lect.select('.class_name')[0].text
+											else: teacher2 =''
+											
+											if teacher2=='': 
+												tc_name = teacher1
+												if tc_name=='':tc_name = '-'
+												tc = re.findall('TC.....'+tc_name,tc_data)	
+												if len(tc) == 0: 
+													tc_code = ''
+													tc_txt = tc_name
+												elif len(tc) == 1: 
+													tc_code = tc[0][0:7]
+													tc_txt = ''
+												else: 
+													tc_code = ''
+													tc_txt = tc_name
+													with open('/Users/choon/Documents/'+'강사중복.txt','a',encoding='utf-8') as tcError:
+														tcError.write(strDate+'-'+institute+'__'+tc_name+'__'+title+'\n')								
+
+											else: 
+												teachers = str(teacher2).split(',')
+												for tcs in range(len(teachers)):
+													tc_name = teachers[tcs].strip()
+													if tc_name=='': tc_name='-'
+													tc = re.findall('TC.....'+tc_name,tc_data)
+													if len(tc) == 0: tc_txt.append(tc_name)
+													elif len(tc) == 1: tc_code.append(tc[0][0:7])
+													else: # 강사 중복 파일로 저장 
+														tc_txt.append(tc_name)
+														with open('/Users/choon/Documents/'+'강사중복.txt','a',encoding='utf-8') as tcError:
+															tcError.write(strDate+'-'+institute+'__'+tc_name+'__'+title+'\n')
+												if len(tc_txt)==1: tc_txt = tc_txt[0]
+												else: tc_txt ='//'.join(tc_txt)
+												if len(tc_code)==1: tc_code = tc_code[0]
+												else: tc_code ='//'.join(tc_code)
+
+											file_name = month+'_'+category+'_'+institute+'_'+strDate+'.csv'
+											with open('/Users/choon/Documents/'+file_name,'a',newline="\n", encoding="utf-8") as file: 
+												file = csv.writer(file ,delimiter=',')							
+												file.writerow([branch, title, st_t, ed_t, tc_txt, tc_code, price, url] + wk_list + lv_list + tp_list)	
+
+									else: print('no title')
 
 off()
 

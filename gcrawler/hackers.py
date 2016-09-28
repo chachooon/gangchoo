@@ -159,14 +159,17 @@ def mktype(category, title):
 
 
 def off():
-	with open('/Users/choon/py3.5/gcrawler/'+'강사.txt','r' ,encoding="utf-8") as file: tc_data =file.read().replace('\\n','')
+	with open('/Users/choon/py3.5/gcrawler/'+'강사.txt','r' ,encoding="utf-8") as file: 
+		tc_data =file.read().replace('\\n','')
+	print(tc_data)
+
 	strDate = datetime.datetime.now().strftime("%y%m%d")
 	# now_y = datetime.date.today().year
 	# now_m = datetime.date.today().month
 	# monthes = [str(now_m), str(now_m+1)]
-	month = '8'
+	month = '10'
 	institute = '해커스'
-	branc_dict = {'1':'강남역캠퍼스','2':'종로캠퍼스','3':'대구캠퍼스'}
+	branc_dict = {'1':'강남역캠퍼스','2':'종로캠퍼스','3':'대구캠퍼스'}       
 	branc_categ_dict = {
 		'1':{'토플':'1','토익':'2','텝스':'3','토스&오픽':'4','일반영어':'5','아이엘츠':'7'},
 		'2':{'토플':'11','토익':'12','토스&오픽':'13','일반영어':'14'},
@@ -190,13 +193,13 @@ def off():
 			for category in ['토익스피킹', '오픽']:
 				mk_header = api.mk_header(category,'off')
 				file_name = month+'_'+category+'_'+institute+'_'+strDate+'.csv'
-				with open('/Users/choon/py3.5/'+file_name,'w',newline="\n", encoding="utf-8") as file: 
+				with open('/Users/choon/Documents/'+file_name,'w',newline="\n", encoding="utf-8") as file: 
 					file = csv.writer(file ,delimiter=',')
 					file.writerow('')
 					file.writerow(mk_header)
 		mk_header = api.mk_header(category,'off')
 		file_name = month+'_'+category+'_'+institute+'_'+strDate+'.csv'
-		with open('/Users/choon/py3.5/'+file_name,'w',newline="\n", encoding="utf-8") as file: 
+		with open('/Users/choon/Documents/'+file_name,'w',newline="\n", encoding="utf-8") as file: 
 			file = csv.writer(file ,delimiter=',')
 			file.writerow('')
 			file.writerow(mk_header)
@@ -259,12 +262,12 @@ def off():
 					tc_txt=[]
 					tc_code=[]
 					teachers = lect.select('td.tr_name')[0].select('a')
-					if teachers == [] : 
+
+					if len(teachers) == 0 : 
 						teachers = lect.select('td.tr_name')[0].font.contents[::2]
 						for tc in range(len(teachers)): tc_list.append(teachers[tc].strip())
 					else: 
 						for tc in range(len(teachers)): tc_list.append(teachers[tc].text)				
-					# print(str(teachers))
 
 					if len(tc_list) > 1 :
 						for tc in range(len(tc_list)):
@@ -275,7 +278,7 @@ def off():
 							elif len(tcsearch) == 1: tc_code.append(tcsearch[0][0:7])
 							else:
 								tc_txt.append(tc_name)
-								with open('/Users/choon/py3.5/'+'강사중복.txt','a',encoding='utf-8') as tcError:
+								with open('/Users/choon/Documents/'+'강사중복.txt','a',encoding='utf-8') as tcError:
 									tcError.write(strDate+'-'+institute+'__'+tc_name+'__'+title+'\n')						
 						if len(tc_txt)==1: tc_txt = tc_txt[0]
 						else: tc_txt ='//'.join(tc_txt)
@@ -286,9 +289,20 @@ def off():
 						tc_name = tc_list[0]
 						if tc_name=='':tc_name = '-'
 						tcsearch = re.findall('TC.....'+tc_name,tc_data)
+						if len(tcsearch) == 0: 
+							tc_code = ''
+							tc_txt = tc_name
+						elif len(tcsearch) == 1: 
+							tc_code = tcsearch[0][0:7]
+							tc_txt = ''
+						else: 
+							tc_code = ''
+							tc_txt = tc_name
+							with open('/Users/choon/Documents/'+'강사중복.txt','a',encoding='utf-8') as tcError:
+								tcError.write(strDate+'-'+institute+'__'+tc_name+'__'+title+'\n')
 
 					file_name = month+'_'+category+'_'+institute+'_'+strDate+'.csv'
-					with open('/Users/choon/py3.5/'+file_name,'a',newline="\n", encoding="utf-8") as file: 
+					with open('/Users/choon/Documents/'+file_name,'a',newline="\n", encoding="utf-8") as file: 
 						file = csv.writer(file ,delimiter=',')							
 						file.writerow([branch, title, st_t, ed_t, tc_txt, tc_code, price, url] + wk_list + lv_list + tp_list)	
 

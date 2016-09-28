@@ -161,7 +161,7 @@ def off():
 		if not line: break
 		teachers = teachers + line
 	t.close()
-
+	print(teachers)
 	
 	strDate = datetime.datetime.now().strftime("%y%m%d")
 	now_y = datetime.date.today().year
@@ -186,7 +186,7 @@ def off():
 			if category == '회화/작문': category = '일반영어'
 			mk_header = api.mk_header(category,'off')
 			file_name = month+'_'+category+'_'+institute+'_'+strDate+'.csv'
-			with open('/Users/choon/py3.5/'+file_name,'w',newline="\n", encoding="utf-8") as file: 
+			with open('/Users/choon/Documents/'+file_name,'w',newline="\n", encoding="utf-8") as file: 
 				file = csv.writer(file ,delimiter=',')
 				file.writerow('')
 				file.writerow(mk_header)
@@ -261,7 +261,7 @@ def off():
 				tp_list = mktype(category, title)	
 
 				if lect['sale_status'] =='HD':
-					with open('Users/choon/py3.5/'+'마감강의.txt','a',encoding='utf-8') as endfile:
+					with open('/Users/choon/Documents/'+'마감강의.txt','a',encoding='utf-8') as endfile:
 						endfile.write(strDate+'-'+institute+'__'+title+'\n')
 				
 				tc_txt=[]
@@ -272,10 +272,10 @@ def off():
 						tc = re.findall('TC.....'+tc_name,teachers)
 						if len(tc) == 0: tc_txt.append(tc_name)
 						elif len(tc) == 1: tc_code.append(tc[0][0:7])
-						else: pass# 강사 중복 파일로 저장 
-							# tc_txt.append(tc_name)
-							# with open('Users/choon/py3.5/'+'강사중복.txt','a',encoding='utf-8') as tcError:
-							# 	tcError.write(strDate+'-'+institute+'__'+tc_name+'__'+title+'\n')
+						else: # 강사 중복 파일로 저장 
+							tc_txt.append(tc_name)
+							with open('/Users/choon/Documents/'+'강사중복.txt','a',encoding='utf-8') as tcError:
+								tcError.write(strDate+'-'+institute+'__'+tc_name+'__'+title+'\n')
 					if len(tc_txt)==1: tc_txt = tc_txt[0]
 					else: tc_txt ='//'.join(tc_txt)
 					if len(tc_code)==1: tc_code = tc_code[0]
@@ -291,17 +291,17 @@ def off():
 					elif len(tc) == 1: 
 						tc_code = tc[0][0:7]
 						tc_txt = ''
-					else: pass
-						# tc_code = ''
-						# tc_txt = tc_name
-						# with open('Users/choon/py3.5/'+'강사중복.txt','a',encoding='utf-8') as tcError:
-						# 	tcError.write(strDate+'-'+institute+'__'+tc_name+'__'+title+'\n')
+					else: 
+						tc_code = ''
+						tc_txt = tc_name
+						with open('/Users/choon/Documents/'+'강사중복.txt','a',encoding='utf-8') as tcError:
+							tcError.write(strDate+'-'+institute+'__'+tc_name+'__'+title+'\n')
 				else:pass
 
 
 				if months[0]+'월' in title: file_name = months[0]+'_'+category+'_'+institute+'_'+strDate+'.csv' 
 				else: file_name = months[1]+'_'+category+'_'+institute+'_'+strDate+'.csv'	
-				with open('Users/choon/py3.5/'+file_name,'a',newline="\n", encoding="utf-8") as file: 
+				with open('/Users/choon/Documents/'+file_name,'a',newline="\n", encoding="utf-8") as file: 
 					file = csv.writer(file ,delimiter=',')	
 					file.writerow([branch, title, st_t, ed_t, tc_txt, tc_code, price, url] + wk_list + lv_list + tp_list)		
 				
