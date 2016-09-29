@@ -161,12 +161,13 @@ def mktype(category, title):
 
 
 def off():
-	with open('/Users/choon/py3.5/gcrawler/'+'강사.txt','r' ,encoding="utf-8") as file: tc_data =file.read().replace('\\n','')
+	with open('/Users/choon/py3.5/gcrawler/'+'강사.txt','r' ,encoding="utf-8") as file: 
+		tc_data =file.read().replace('\\n','')
 	strDate = datetime.datetime.now().strftime("%y%m%d")
-	now_y = datetime.date.today().year
-	now_m = datetime.date.today().month
-	if len(str(now_m)) == 1: yymm = str(now_y)+'0'+str(now_m)
-	else: yymm = str(now_y)+str(now_m)
+	# now_y = datetime.date.today().year
+	# now_m = datetime.date.today().month
+	# if len(str(now_m)) == 1: yymm = str(now_y)+'0'+str(now_m)
+	# else: yymm = str(now_y)+str(now_m)
 	# if now_m == 12: months = ['12','1']
 	# else: months = [str(now_m), str(now_m+1)]
 	month = '10'
@@ -298,32 +299,48 @@ def off():
 					tc_txt=[]
 					tc_code=[]
 					teachers = lect['teacher']
-					if len(teachers) == 1: 
-						tcnames = html.parser.HTMLParser().unescape(teachers[0]['name'])
-						tc_name = tcnames.split('(')[0]
-						if tc_name in tc_data: 
-							tc_code = tc_data[tc_name]
-							tc_txt = ''
-						else: 
-							tc_txt = tc_name
-							tc_code =''
+					if len(teachers) == 0:pass
 					else:
-						tcnames =[]
-						for t in range(len(teachers)):
-							tcname = html.parser.HTMLParser().unescape(teachers[t]['name'])
-							tcnames.append(tcname)
-							tc_name = tcname.split('(')[0]
-							if tc_name in tc_data:
-								if tc_data[tc_name] not in tc_code: tc_code.append(tc_data[tc_name])
-							else:
-								if tc_name not in tc_txt: tc_txt.append(tc_name)
-						tcnames = ' '.join(tcnames)
-						tc_txt = '//'.join(tc_txt)
-						tc_code = '//'.join(tc_code)
+						if len(teachers) == 1: 
+							tcnames = html.parser.HTMLParser().unescape(teachers[0]['name'])
+							tc_name = tcnames.split('(')[0]
+							tcsearch = re.findall('TC.....'+tc_name,tc_data)
+							if len(tcsearch) == 0: 
+								tc_code = ''
+								tc_txt = tc_name
+							elif len(tcsearch) == 1: 
+								tc_code = tcsearch[0][0:7]
+								tc_txt = ''
+							else: 
+								tc_code = ''
+								tc_txt = tc_name
+								with open('/Users/choon/Documents/'+'강사중복.txt','a',encoding='utf-8') as tcError:
+									tcError.write(strDate+'-'+institute+'__'+tc_name+'__'+title+'\n')	
 
-					file_name = month+'_'+category+'_'+institute+'_'+strDate+'.csv'
-					with open('/Users/choon/Documents/'+file_name,'a',newline="\n", encoding="utf-8") as file: 
-						file = csv.writer(file ,delimiter=',')							
-						file.writerow([branch, title, st_t, ed_t, tc_txt, tc_code, price, url] + wk_list+ lv_list + tp_list)	
+						else:
+							tcnames =[]
+							for t in range(len(teachers)):
+								tcname = html.parser.HTMLParser().unescape(teachers[t]['name'])
+								tc_name = tcname.split('(')[0]
+								tcnames.append(tcname)
+							for t in range(len(tcnames)):
+								tc_name = tcnames[t]
+								tcsearch = re.findall('TC.....'+tc_name,tc_data)
+								if len(tcsearch) == 0: tc_txt.append(tc_name)
+								elif len(tcsearch) == 1: tc_code.append(tcsearch[0][0:7])
+								else:
+									tc_txt.append(tc_name)
+									with open('/Users/choon/Documents/'+'강사중복.txt','a',encoding='utf-8') as tcError:
+										tcError.write(strDate+'-'+institute+'__'+tc_name+'__'+title+'\n')	
+							if len(tc_txt)==1: tc_txt = tc_txt[0]
+							else: tc_txt ='//'.join(tc_txt)
+							if len(tc_code)==1: tc_code = tc_code[0]
+							else: tc_code ='//'.join(tc_code)				
+								
+
+						file_name = month+'_'+category+'_'+institute+'_'+strDate+'.csv'
+						with open('/Users/choon/Documents/'+file_name,'a',newline="\n", encoding="utf-8") as file: 
+							file = csv.writer(file ,delimiter=',')							
+							file.writerow([branch, title, st_t, ed_t, tc_txt, tc_code, price, url] + wk_list+ lv_list + tp_list)	
 
 off()
